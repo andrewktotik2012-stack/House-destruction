@@ -9,29 +9,21 @@
 html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:Arial;touch-action:none}
 #app{position:fixed;inset:0}
 #hud{position:fixed;inset:0;pointer-events:none;z-index:10}
-
-/* Верхняя панель — статистика */
 #topBar{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
 .stat{background:rgba(0,0,0,.65);padding:6px 12px;border-radius:8px;color:#fff;font-size:12px;text-align:center}
 .stat .lbl{color:#8af;font-size:9px;display:block}
 .stat .val{color:#ff0;font-weight:bold;font-size:16px}
-
-/* Кнопки камеры */
 #camBtns{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:6px;pointer-events:auto;margin-top:60px}
 .camBtn{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);border:2px solid #fff;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
-
-/* Нижняя панель — инструменты */
 #toolsBar{position:fixed;bottom:0;left:0;right:0;z-index:11;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
   background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
   display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
 .tool{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.5);
   color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .tool.active{background:rgba(255,100,100,.7);border-color:#f66;transform:scale(1.1)}
-
 #msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;background:rgba(0,0,0,.85);
   padding:14px 22px;border-radius:10px;font-size:14px;z-index:15;display:none;text-align:center;max-width:80%;pointer-events:auto}
 #msg.on{display:block}
-
 #startHint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;background:rgba(0,0,0,.85);
   padding:16px 20px;border-radius:10px;font-size:13px;z-index:14;text-align:center;line-height:1.7;
   border:2px solid #4f4;max-width:88%;pointer-events:auto}
@@ -41,7 +33,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:
 </head>
 <body>
 <div id="app"></div>
-
 <div id="hud">
   <div id="topBar">
     <div class="stat"><span class="lbl">РАЗРУШЕНО</span><span class="val" id="destroyVal">0%</span></div>
@@ -53,7 +44,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:
     <button class="camBtn" id="camReset">⟲</button>
   </div>
 </div>
-
 <div id="toolsBar">
   <button class="tool active" data-tool="bomb">💣</button>
   <button class="tool" data-tool="dynamite">🧨</button>
@@ -63,13 +53,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:
   <button class="tool" data-tool="water">💧</button>
   <button class="tool" data-tool="nuke">☢️</button>
 </div>
-
 <div id="msg"></div>
 <div id="startHint">
   <b>Разрушь дом!</b><br>
-  • Выбери инструмент внизу<br>
-  • Тапни по дому — сработает<br>
-  • Свайп — поворот камеры<br>
+  • Инструмент внизу → тапни по дому<br>
+  • Свайп — камера<br>
   • 2 пальца — зум<br>
   • ⊞ — вид сверху<br>
   <br>
@@ -82,304 +70,191 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87ceeb);
 scene.fog=new THREE.Fog(0x87ceeb,120,600);
-
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,2000);
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.3));
 renderer.setSize(innerWidth,innerHeight);
 document.getElementById('app').appendChild(renderer.domElement);
-
 scene.add(new THREE.HemisphereLight(0xffffff,0x445566,1.1));
 const sun=new THREE.DirectionalLight(0xffffff,1.3);
 sun.position.set(80,150,60);
 scene.add(sun);
 
 // ============ ЗЕМЛЯ ============
-const ground=new THREE.Mesh(
-  new THREE.PlaneGeometry(400,400),
-  new THREE.MeshLambertMaterial({color:0x3a5a3a})
-);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),new THREE.MeshLambertMaterial({color:0x3a5a3a}));
 ground.rotation.x=-Math.PI/2;
 scene.add(ground);
 
-// тротуар вокруг дома
-const sidewalk=new THREE.Mesh(
-  new THREE.PlaneGeometry(50,50),
-  new THREE.MeshLambertMaterial({color:0x999999})
-);
-sidewalk.rotation.x=-Math.PI/2;
-sidewalk.position.y=0.02;
+const sidewalk=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshLambertMaterial({color:0x999999}));
+sidewalk.rotation.x=-Math.PI/2;sidewalk.position.y=0.02;
 scene.add(sidewalk);
 
-// дорога
-const road=new THREE.Mesh(
-  new THREE.PlaneGeometry(60,12),
-  new THREE.MeshLambertMaterial({color:0x1a1a1a})
-);
-road.rotation.x=-Math.PI/2;
-road.position.set(0,0.03,30);
+const road=new THREE.Mesh(new THREE.PlaneGeometry(60,12),new THREE.MeshLambertMaterial({color:0x1a1a1a}));
+road.rotation.x=-Math.PI/2;road.position.set(0,0.03,30);
 scene.add(road);
-
-// разметка
 const lineMat=new THREE.MeshBasicMaterial({color:0xffff00});
 for(let i=-25;i<=25;i+=5){
   const l=new THREE.Mesh(new THREE.PlaneGeometry(2,.4),lineMat);
-  l.rotation.x=-Math.PI/2;
-  l.position.set(i,0.04,30);
-  scene.add(l);
+  l.rotation.x=-Math.PI/2;l.position.set(i,0.04,30);scene.add(l);
 }
 
-// ============ ДЕРЕВЬЯ ВОКРУГ ============
+// ============ ДЕРЕВЬЯ ============
 function mkTree(x,z){
   const g=new THREE.Group();
   const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.3,.4,3,6),new THREE.MeshLambertMaterial({color:0x5a3a20}));
   trunk.position.y=1.5;g.add(trunk);
   const crown=new THREE.Mesh(new THREE.SphereGeometry(2,8,6),new THREE.MeshLambertMaterial({color:0x2a6a2a}));
   crown.position.y=4;g.add(crown);
-  g.position.set(x,0,z);
-  scene.add(g);
+  g.position.set(x,0,z);scene.add(g);
 }
-mkTree(-20,-15);mkTree(20,-15);mkTree(-20,15);mkTree(20,15);
-mkTree(-25,0);mkTree(25,0);
+mkTree(-20,-15);mkTree(20,-15);mkTree(-20,15);mkTree(20,15);mkTree(-25,0);mkTree(25,0);
 
 // ============ ДОМ ============
-const house={
-  floors:12,
-  floorHeight:3,
-  width:16,
-  depth:12,
-  floorObjects:[],    // этажи
-  wallObjects:[],     // стены (для разрушения)
-  windowObjects:[],   // окна
-  destroyed:0,
-  totalParts:0,
-  score:0
-};
+const house={floors:12,floorHeight:3,width:16,depth:12,floorObjects:[],wallObjects:[],windowObjects:[],destroyed:0,totalParts:0,score:0};
 
-// фундамент
-const foundation=new THREE.Mesh(
-  new THREE.BoxGeometry(house.width+1,1,house.depth+1),
-  new THREE.MeshLambertMaterial({color:0x555555})
-);
+const foundation=new THREE.Mesh(new THREE.BoxGeometry(house.width+1,1,house.depth+1),new THREE.MeshLambertMaterial({color:0x555555}));
 foundation.position.y=0.5;
 scene.add(foundation);
 house.foundation=foundation;
 
-// материалы
 const wallMat=new THREE.MeshLambertMaterial({color:0xccbb99});
 const wallMat2=new THREE.MeshLambertMaterial({color:0xaa9977});
 const glassMat=new THREE.MeshLambertMaterial({color:0x335577,transparent:true,opacity:.6});
 const doorMat=new THREE.MeshLambertMaterial({color:0x5a3a20});
 
-// функция: окно (стекло + рама)
-function mkWindow(x,y,z,wallSide){
+function mkWindow(x,y,z,side){
   const g=new THREE.Group();
-  // стекло
   const glass=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.8,.05),glassMat);
   g.add(glass);
-  // рама — 4 полоски
-  const frameMat=new THREE.MeshLambertMaterial({color:0xeeeeee});
+  const fm=new THREE.MeshLambertMaterial({color:0xeeeeee});
   const t=.1;
-  const h1=new THREE.Mesh(new THREE.BoxGeometry(1.6,t,.08),frameMat);
-  h1.position.set(0,.95,0);g.add(h1);
-  const h2=new THREE.Mesh(new THREE.BoxGeometry(1.6,t,.08),frameMat);
-  h2.position.set(0,-.95,0);g.add(h2);
-  const v1=new THREE.Mesh(new THREE.BoxGeometry(t,1.9,.08),frameMat);
-  v1.position.set(.75,0,0);g.add(v1);
-  const v2=new THREE.Mesh(new THREE.BoxGeometry(t,1.9,.08),frameMat);
-  v2.position.set(-.75,0,0);g.add(v2);
-  // крест посередине
-  const vmid=new THREE.Mesh(new THREE.BoxGeometry(.06,1.8,.08),frameMat);
-  g.add(vmid);
-  const hmid=new THREE.Mesh(new THREE.BoxGeometry(1.4,.06,.08),frameMat);
-  g.add(hmid);
-
-  g.position.set(x,y,z);
-  if(wallSide==='north'||wallSide==='south'){
-    // окно на стене вдоль X — плоскость XY
-  } else {
-    g.rotation.y=Math.PI/2;
+  const parts=[
+    [1.6,t,.08,0,.95,0],[1.6,t,.08,0,-.95,0],
+    [t,1.9,.08,.75,0,0],[t,1.9,.08,-.75,0,0],
+    [.06,1.8,.08,0,0,.01],[1.4,.06,.08,0,0,.01]
+  ];
+  for(const p of parts){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(p[0],p[1],p[2]),fm);
+    m.position.set(p[3],p[4],p[5]);g.add(m);
   }
+  g.position.set(x,y,z);
+  if(side==='e'||side==='w')g.rotation.y=Math.PI/2;
   scene.add(g);
   house.windowObjects.push(g);
   return g;
 }
 
-// Генерация этажей
 for(let f=0;f<house.floors;f++){
-  const yBase=f*house.floorHeight+1;  // +1 потому что фундамент высотой 1
-  const floorGroup=new THREE.Group();
+  const yBase=f*house.floorHeight+1;
+  const fg=new THREE.Group();
 
-  // ---- ПОЛ ----
-  const floor=new THREE.Mesh(
-    new THREE.BoxGeometry(house.width,.3,house.depth),
-    new THREE.MeshLambertMaterial({color:0x888888})
-  );
-  floor.position.y=yBase+.15;
-  floorGroup.add(floor);
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(house.width,.3,house.depth),new THREE.MeshLambertMaterial({color:0x888888}));
+  floor.position.y=yBase+.15;fg.add(floor);
 
-  // ---- СТЕНЫ (4 стены, каждая — отдельный объект) ----
-  const wallT=.3;  // толщина стены
-  const wallH=house.floorHeight;
+  const wallT=.3,wallH=house.floorHeight;
+  const useMat=f%3===0?wallMat2:wallMat;
 
-  // Северная стена (z = -depth/2)
-  const wallN=new THREE.Mesh(
-    new THREE.BoxGeometry(house.width,wallH,wallT),
-    f%3===0?wallMat2:wallMat
-  );
+  // 4 стены
+  const wallN=new THREE.Mesh(new THREE.BoxGeometry(house.width,wallH,wallT),useMat);
   wallN.position.set(0,yBase+wallH/2,-house.depth/2);
   wallN.userData={type:'wall',floor:f,side:'n'};
-  floorGroup.add(wallN);
-  house.wallObjects.push(wallN);
+  fg.add(wallN);house.wallObjects.push(wallN);
 
-  // Южная стена (z = +depth/2)
-  const wallS=new THREE.Mesh(
-    new THREE.BoxGeometry(house.width,wallH,wallT),
-    f%3===0?wallMat2:wallMat
-  );
+  const wallS=new THREE.Mesh(new THREE.BoxGeometry(house.width,wallH,wallT),useMat);
   wallS.position.set(0,yBase+wallH/2,house.depth/2);
   wallS.userData={type:'wall',floor:f,side:'s'};
-  floorGroup.add(wallS);
-  house.wallObjects.push(wallS);
+  fg.add(wallS);house.wallObjects.push(wallS);
 
-  // Западная стена (x = -width/2)
-  const wallW=new THREE.Mesh(
-    new THREE.BoxGeometry(wallT,wallH,house.depth-wallT*2),
-    f%3===0?wallMat2:wallMat
-  );
+  const wallW=new THREE.Mesh(new THREE.BoxGeometry(wallT,wallH,house.depth-wallT*2),useMat);
   wallW.position.set(-house.width/2,yBase+wallH/2,0);
   wallW.userData={type:'wall',floor:f,side:'w'};
-  floorGroup.add(wallW);
-  house.wallObjects.push(wallW);
+  fg.add(wallW);house.wallObjects.push(wallW);
 
-  // Восточная стена (x = +width/2)
-  const wallE=new THREE.Mesh(
-    new THREE.BoxGeometry(wallT,wallH,house.depth-wallT*2),
-    f%3===0?wallMat2:wallMat
-  );
+  const wallE=new THREE.Mesh(new THREE.BoxGeometry(wallT,wallH,house.depth-wallT*2),useMat);
   wallE.position.set(house.width/2,yBase+wallH/2,0);
   wallE.userData={type:'wall',floor:f,side:'e'};
-  floorGroup.add(wallE);
-  house.wallObjects.push(wallE);
+  fg.add(wallE);house.wallObjects.push(wallE);
 
-  // ---- ОКНА на южной и северной стенах ----
+  // окна
   for(let k=-1;k<=1;k++){
     const wx=k*(house.width/3.5);
-    // окна с юга (лицом к дороге)
-    mkWindow(wx,yBase+wallH*0.6,house.depth/2+.1,'south');
-    // окна с севера
-    mkWindow(wx,yBase+wallH*0.6,-house.depth/2-.1,'north');
+    mkWindow(wx,yBase+wallH*0.6,house.depth/2+.1,'s');
+    mkWindow(wx,yBase+wallH*0.6,-house.depth/2-.1,'n');
   }
 
-  // ---- ВХОД на первом этаже ----
+  // вход
   if(f===0){
     const door=new THREE.Mesh(new THREE.BoxGeometry(2,2.5,.2),doorMat);
     door.position.set(0,yBase+1.25,house.depth/2+.15);
-    floorGroup.add(door);
-    // козырёк
+    fg.add(door);
     const canopy=new THREE.Mesh(new THREE.BoxGeometry(4,.3,2),new THREE.MeshLambertMaterial({color:0x444444}));
     canopy.position.set(0,yBase+2.8,house.depth/2+1);
-    floorGroup.add(canopy);
+    fg.add(canopy);
   }
 
-  // ---- БАЛКОН на каждом 3-м этаже, с юга ----
+  // балконы
   if(f>0&&f%3===0){
-    const balcony=new THREE.Mesh(
-      new THREE.BoxGeometry(house.width*.5,.2,1.5),
-      new THREE.MeshLambertMaterial({color:0x777777})
-    );
-    balcony.position.set(0,yBase+0.1,house.depth/2+0.75);
-    floorGroup.add(balcony);
-    // перила
-    const rail=new THREE.Mesh(
-      new THREE.BoxGeometry(house.width*.5,1,.1),
-      new THREE.MeshLambertMaterial({color:0x555555})
-    );
-    rail.position.set(0,yBase+0.6,house.depth/2+1.5);
-    floorGroup.add(rail);
+    const balc=new THREE.Mesh(new THREE.BoxGeometry(house.width*.5,.2,1.5),new THREE.MeshLambertMaterial({color:0x777777}));
+    balc.position.set(0,yBase+0.1,house.depth/2+0.75);fg.add(balc);
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(house.width*.5,1,.1),new THREE.MeshLambertMaterial({color:0x555555}));
+    rail.position.set(0,yBase+0.6,house.depth/2+1.5);fg.add(rail);
   }
 
-  scene.add(floorGroup);
-  house.floorObjects.push(floorGroup);
-  floorGroup.userData={floor:f,yBase:yBase};
+  scene.add(fg);
+  house.floorObjects.push(fg);
+  fg.userData={floor:f,yBase:yBase};
 }
 
-// ---- КРЫША ----
 const roofY=house.floors*house.floorHeight+1;
-const roof=new THREE.Mesh(
-  new THREE.BoxGeometry(house.width+1,.5,house.depth+1),
-  new THREE.MeshLambertMaterial({color:0x444444})
-);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(house.width+1,.5,house.depth+1),new THREE.MeshLambertMaterial({color:0x444444}));
 roof.position.y=roofY+.25;
-roof.userData={type:'roof'};
 scene.add(roof);
 house.roof=roof;
 
-// антенна
-const antenna=new THREE.Mesh(
-  new THREE.CylinderGeometry(.05,.05,5,4),
-  new THREE.MeshLambertMaterial({color:0x888888})
-);
+const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,5,4),new THREE.MeshLambertMaterial({color:0x888888}));
 antenna.position.set(house.width/2-2,roofY+2.5,0);
 scene.add(antenna);
-house.antenna=antenna;
 
-// ---- ПОДВАЛ ----
-const basement=new THREE.Mesh(
-  new THREE.BoxGeometry(house.width-2,1.5,house.depth-2),
-  new THREE.MeshLambertMaterial({color:0x333333})
-);
+const basement=new THREE.Mesh(new THREE.BoxGeometry(house.width-2,1.5,house.depth-2),new THREE.MeshLambertMaterial({color:0x333333}));
 basement.position.y=-0.5;
 scene.add(basement);
-house.basement=basement;
 
-// ---- входная площадка ----
-const porch=new THREE.Mesh(
-  new THREE.BoxGeometry(6,.4,3),
-  new THREE.MeshLambertMaterial({color:0xaaaaaa})
-);
+const porch=new THREE.Mesh(new THREE.BoxGeometry(6,.4,3),new THREE.MeshLambertMaterial({color:0xaaaaaa}));
 porch.position.set(0,.2,house.depth/2+1.5);
 scene.add(porch);
 
-// ---- кусты рядом ----
+// кусты
 function mkBush(x,z){
   const b=new THREE.Mesh(new THREE.SphereGeometry(.8,6,6),new THREE.MeshLambertMaterial({color:0x2a5a2a}));
-  b.position.set(x,.4,z);
-  scene.add(b);
+  b.position.set(x,.4,z);scene.add(b);
 }
 mkBush(-10,8);mkBush(10,8);mkBush(-10,-8);mkBush(10,-8);
 
-// ---- забор ----
+// забор
 const fenceMat=new THREE.MeshLambertMaterial({color:0x8a6a3a});
 for(let i=-22;i<=22;i+=2){
-  if(Math.abs(i)<6)continue; // проход для входа
+  if(Math.abs(i)<6)continue;
   const p=new THREE.Mesh(new THREE.BoxGeometry(.15,1.5,.15),fenceMat);
-  p.position.set(i,.75,house.depth/2+3);
-  scene.add(p);
+  p.position.set(i,.75,house.depth/2+3);scene.add(p);
 }
 for(const z of[-22,22]){
   for(let i=-20;i<=20;i+=2){
     const p=new THREE.Mesh(new THREE.BoxGeometry(.15,1.5,.15),fenceMat);
-    p.position.set(z,.75,i);
-    scene.add(p);
+    p.position.set(z,.75,i);scene.add(p);
   }
 }
-// ============ СОСТОЯНИЕ ИГРЫ ============
+
+// ============ СОСТОЯНИЕ ============
 const state={
-  tool:'bomb',         // текущий инструмент
-  cameraMode:'orbit',  // orbit | top
-  camTheta:Math.PI/4,
-  camPhi:Math.PI/3,
-  camDist:80,
+  tool:'bomb',camTheta:Math.PI/4,camPhi:Math.PI/3,camDist:80,
   camTarget:new THREE.Vector3(0,house.floors*house.floorHeight/2,0),
-  destroyedParts:0,
-  totalParts:house.wallObjects.length+house.windowObjects.length+1+1, // стены+окна+крыша+антенна
+  destroyedParts:0,totalParts:house.wallObjects.length+house.windowObjects.length+2,
   score:0
 };
 
 // ============ ОБЛОМКИ ============
 const debris=[];
-const MAX_DEBRIS=250;
+const MAX_DEBRIS=300;
 const debrisGeo=new THREE.BoxGeometry(1,1,1);
 
 function spawnDebris(pos,mat,size,force){
@@ -393,48 +268,31 @@ function spawnDebris(pos,mat,size,force){
   scene.add(p);
   debris.push({
     mesh:p,
-    vel:new THREE.Vector3(
-      (Math.random()-.5)*force,
-      Math.random()*force*0.7+2,
-      (Math.random()-.5)*force
-    ),
-    rot:new THREE.Vector3(
-      (Math.random()-.5)*6,
-      (Math.random()-.5)*6,
-      (Math.random()-.5)*6
-    ),
-    life:120,
-    material:mat
+    vel:new THREE.Vector3((Math.random()-.5)*force,Math.random()*force*0.7+2,(Math.random()-.5)*force),
+    rot:new THREE.Vector3((Math.random()-.5)*6,(Math.random()-.5)*6,(Math.random()-.5)*6),
+    life:120,material:mat,isBig:false
   });
 }
 
 // ============ ОГОНЬ ============
 const fires=[];
 const fireGeo=new THREE.SphereGeometry(1,6,6);
-
 function ignite(pos){
-  // добавляем огонь
-  const f=new THREE.Mesh(fireGeo,new THREE.MeshBasicMaterial({
-    color:0xff5500,transparent:true,opacity:.9
-  }));
+  const f=new THREE.Mesh(fireGeo,new THREE.MeshBasicMaterial({color:0xff5500,transparent:true,opacity:.9}));
   f.position.copy(pos);
   f.scale.setScalar(1.5+Math.random());
   scene.add(f);
   fires.push({mesh:f,life:15,maxLife:15,spreadTimer:1.5});
 }
-
 function updateFires(dt){
   for(let i=fires.length-1;i>=0;i--){
     const f=fires[i];
     f.life-=dt;
-    // мерцание
     f.mesh.scale.setScalar(1.5+Math.random()*0.5);
     f.mesh.material.opacity=Math.min(0.9,f.life/5);
-    // распространение
     f.spreadTimer-=dt;
     if(f.spreadTimer<=0&&f.life>5){
       f.spreadTimer=2+Math.random();
-      // поджигаем соседние стены в радиусе 6
       for(const wall of house.wallObjects){
         if(wall.userData.destroyed||wall.userData.onFire)continue;
         const wp=new THREE.Vector3();
@@ -445,23 +303,14 @@ function updateFires(dt){
         }
       }
     }
-    if(f.life<=0){
-      scene.remove(f.mesh);
-      fires.splice(i,1);
-    }
+    if(f.life<=0){scene.remove(f.mesh);fires.splice(i,1);}
   }
 }
-
-// ============ ВОДА (гасит огонь) ============
 function extinguish(pos,radius){
   for(let i=fires.length-1;i>=0;i--){
     const f=fires[i];
-    if(f.mesh.position.distanceTo(pos)<radius){
-      scene.remove(f.mesh);
-      fires.splice(i,1);
-    }
+    if(f.mesh.position.distanceTo(pos)<radius){scene.remove(f.mesh);fires.splice(i,1);}
   }
-  // снимаем onFire со стен
   for(const wall of house.wallObjects){
     const wp=new THREE.Vector3();
     wall.getWorldPosition(wp);
@@ -469,116 +318,83 @@ function extinguish(pos,radius){
   }
 }
 
-// ============ ВЗРЫВ ============
+// ============ ЭФФЕКТЫ ============
 const effects=[];
 const expGeo=new THREE.SphereGeometry(1,10,10);
 const smokeGeo=new THREE.SphereGeometry(1,6,6);
 
 function explode(pos,radius,power,isNuke){
   const fireColor=isNuke?0xffffee:0xffaa33;
-  // огненный шар
   const m=new THREE.MeshBasicMaterial({color:fireColor,transparent:true,opacity:.95});
   const s=new THREE.Mesh(expGeo,m);
-  s.position.copy(pos);
-  scene.add(s);
+  s.position.copy(pos);scene.add(s);
   effects.push({mesh:s,life:isNuke?1.2:.5,max:isNuke?1.2:.5,targetR:radius,type:'fireball'});
 
-  // дым
   const smCount=isNuke?12:5;
   for(let i=0;i<smCount;i++){
-    const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({
-      color:isNuke?0x111111:0x555555,transparent:true,opacity:.6
-    }));
+    const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({color:isNuke?0x111111:0x555555,transparent:true,opacity:.6}));
     sm.position.copy(pos);
     sm.position.x+=(Math.random()-.5)*6;
     sm.position.y+=Math.random()*4;
     sm.position.z+=(Math.random()-.5)*6;
     sm.scale.setScalar(2+Math.random()*2);
     scene.add(sm);
-    effects.push({
-      mesh:sm,life:isNuke?6:3,max:isNuke?6:3,
-      targetR:radius*(isNuke?1:.7),type:'smoke',
-      vel:new THREE.Vector3((Math.random()-.5)*2,1+Math.random()*2,(Math.random()-.5)*2)
-    });
+    effects.push({mesh:sm,life:isNuke?6:3,max:isNuke?6:3,targetR:radius*(isNuke?1:.7),type:'smoke',vel:new THREE.Vector3((Math.random()-.5)*2,1+Math.random()*2,(Math.random()-.5)*2)});
   }
 
-  // ядерный гриб
   if(isNuke){
-    const stem=new THREE.Mesh(
-      new THREE.CylinderGeometry(radius*.3,radius*.5,radius*1.5,12,1,true),
-      new THREE.MeshBasicMaterial({color:0xffddaa,transparent:true,opacity:.7,side:THREE.DoubleSide})
-    );
-    stem.position.copy(pos);
-    stem.position.y+=radius*.75;
-    scene.add(stem);
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(radius*.3,radius*.5,radius*1.5,12,1,true),
+      new THREE.MeshBasicMaterial({color:0xffddaa,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+    stem.position.copy(pos);stem.position.y+=radius*.75;scene.add(stem);
     effects.push({mesh:stem,life:4,max:4,targetR:1,type:'stem'});
-
     const cap=new THREE.Mesh(expGeo,new THREE.MeshBasicMaterial({color:0xffcc88,transparent:true,opacity:.7}));
-    cap.position.copy(pos);
-    cap.position.y+=radius*1.5;
-    scene.add(cap);
+    cap.position.copy(pos);cap.position.y+=radius*1.5;scene.add(cap);
     effects.push({mesh:cap,life:4,max:4,targetR:radius*1.5,type:'cap'});
   }
 
-  // вспышка
   const light=new THREE.PointLight(fireColor,isNuke?1000:400,radius*6);
-  light.position.copy(pos);
-  scene.add(light);
+  light.position.copy(pos);scene.add(light);
   effects.push({light,life:isNuke?.8:.4,max:isNuke?.8:.4});
 
-  // ===== РАЗРУШЕНИЕ =====
-  // Стены
+  // разрушение стен
   for(const wall of house.wallObjects){
     if(wall.userData.destroyed)continue;
     const wp=new THREE.Vector3();
     wall.getWorldPosition(wp);
     const bb=new THREE.Box3().setFromObject(wall);
-    const sz=new THREE.Vector3();
-    bb.getSize(sz);
-    const dist=wp.distanceTo(pos);
-    if(dist<radius+Math.max(sz.x,sz.z)){
+    const sz=new THREE.Vector3();bb.getSize(sz);
+    if(wp.distanceTo(pos)<radius+Math.max(sz.x,sz.z)){
       destroyWall(wall,wp,sz,power);
     }
   }
 
-  // Окна
+  // окна
   for(const win of house.windowObjects){
     if(win.userData.destroyed)continue;
     const wp=new THREE.Vector3();
     win.getWorldPosition(wp);
     if(wp.distanceTo(pos)<radius+1){
-      // разбиваем стекло
       win.userData.destroyed=true;
-      // осколки
-      for(let k=0;k<5;k++){
-        spawnDebris(wp,glassMat,new THREE.Vector3(.3,.3,.3),10);
-      }
-      // убираем окно
+      for(let k=0;k<5;k++)spawnDebris(wp,glassMat,new THREE.Vector3(.3,.3,.3),10);
       scene.remove(win);
-      state.destroyedParts++;
-      state.score+=5;
+      state.destroyedParts++;state.score+=5;
     }
   }
 
-  // Крыша — если близко
+  // крыша
   if(house.roof&&!house.roof.userData.destroyed){
     const wp=new THREE.Vector3();
     house.roof.getWorldPosition(wp);
-    if(wp.distanceTo(pos)<radius+8){
-      destroyRoof();
-    }
+    if(wp.distanceTo(pos)<radius+8)destroyRoof();
   }
 
-  // Фундамент — если очень мощный взрыв рядом
   if(isNuke&&house.foundation&&!house.foundation.userData.destroyed){
     const wp=new THREE.Vector3();
     house.foundation.getWorldPosition(wp);
-    if(wp.distanceTo(pos)<radius+5){
-      destroyFoundation();
-    }
+    if(wp.distanceTo(pos)<radius+5)destroyFoundation();
   }
 
-  // Огонь
+  // огонь
   for(const wall of house.wallObjects){
     if(wall.userData.destroyed)continue;
     const wp=new THREE.Vector3();
@@ -590,45 +406,101 @@ function explode(pos,radius,power,isNuke){
   }
 }
 
-// ============ РАЗРУШЕНИЕ СТЕН ============
+// ============ РАЗРУШЕНИЕ СТЕН (КРУПНЫЕ КУСКИ) ============
 function destroyWall(wall,wp,sz,power){
   if(wall.userData.destroyed)return;
   wall.userData.destroyed=true;
 
-  // сколько кусков
-  const pieces=4+Math.floor(Math.random()*3);
-  for(let p=0;p<pieces;p++){
+  // 2-3 крупных фрагмента
+  const bigPieces=2+Math.floor(Math.random()*2);
+  for(let p=0;p<bigPieces;p++){
     const pos=wp.clone();
-    pos.x+=(Math.random()-.5)*sz.x;
-    pos.y+=(Math.random()-.5)*sz.y;
-    pos.z+=(Math.random()-.5)*sz.z;
-    spawnDebris(pos,wall.material,sz,power);
+    pos.x+=(Math.random()-.5)*sz.x*0.7;
+    pos.y+=(Math.random()-.5)*sz.y*0.7;
+    pos.z+=(Math.random()-.5)*sz.z*0.7;
+
+    const bigSize=new THREE.Vector3(
+      sz.x*(0.5+Math.random()*0.3),
+      sz.y*(0.5+Math.random()*0.3),
+      sz.z*(0.5+Math.random()*0.3)
+    );
+
+    const mesh=new THREE.Mesh(debrisGeo,wall.material);
+    mesh.scale.copy(bigSize);
+    mesh.position.copy(pos);
+    scene.add(mesh);
+
+    debris.push({
+      mesh:mesh,
+      vel:new THREE.Vector3(
+        (Math.random()-.5)*power*0.4,
+        Math.random()*3+0.5,
+        (Math.random()-.5)*power*0.4
+      ),
+      rot:new THREE.Vector3(
+        (Math.random()-.5)*3,
+        (Math.random()-.5)*3,
+        (Math.random()-.5)*3
+      ),
+      life:150,
+      material:wall.material,
+      isBig:true,
+      size:bigSize.clone(),
+      broken:false
+    });
   }
 
-  // убираем стену
   wall.parent.remove(wall);
-  state.destroyedParts++;
-  state.score+=15;
+  state.destroyedParts++;state.score+=15;
 
-  // Шанс обрушения этажа, если это нижняя стена
+  // пыль
+  for(let k=0;k<3;k++){
+    const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.5}));
+    sm.position.copy(wp);
+    sm.position.x+=(Math.random()-.5)*sz.x;
+    sm.position.z+=(Math.random()-.5)*sz.z;
+    sm.scale.setScalar(2);
+    scene.add(sm);
+    effects.push({mesh:sm,life:2.5,max:2.5,targetR:5,type:'smoke',vel:new THREE.Vector3((Math.random()-.5),.5+Math.random()*.5,(Math.random()-.5))});
+  }
+
   checkFloorCollapse(wall.userData.floor);
 }
 
 function checkFloorCollapse(floorIndex){
-  // считаем сколько стен осталось на этаже
   const floorWalls=house.wallObjects.filter(w=>w.userData.floor===floorIndex&&!w.userData.destroyed);
-  // если 3 из 4 стен снесены — этаж обрушается
-  if(floorWalls.length<=1){
-    collapseFloor(floorIndex);
-  }
+  if(floorWalls.length<=2)tiltFloor(floorIndex);
 }
 
-function collapseFloor(floorIndex){
-  const floorGroup=house.floorObjects[floorIndex];
-  if(!floorGroup||floorGroup.userData.collapsed)return;
-  floorGroup.userData.collapsed=true;
+// ЭТАЖ НАКЛОНЯЕТСЯ
+function tiltFloor(floorIndex){
+  const fg=house.floorObjects[floorIndex];
+  if(!fg||fg.userData.tilting||fg.userData.collapsed)return;
+  fg.userData.tilting=true;
 
-  // все оставшиеся стены этажа — в обломки
+  const tiltX=(Math.random()-.5)*0.5;
+  const tiltZ=(Math.random()-.5)*0.5;
+  const startTime=performance.now();
+  const duration=1500;
+
+  const interval=setInterval(()=>{
+    const t=Math.min(1,(performance.now()-startTime)/duration);
+    fg.rotation.x=tiltX*t;
+    fg.rotation.z=tiltZ*t;
+    fg.position.y=-t*t*1.5;
+    if(t>=1){
+      clearInterval(interval);
+      setTimeout(()=>collapseFloor(floorIndex),300);
+    }
+  },30);
+}
+
+// ЭТАЖ ПАДАЕТ
+function collapseFloor(floorIndex){
+  const fg=house.floorObjects[floorIndex];
+  if(!fg||fg.userData.collapsed)return;
+  fg.userData.collapsed=true;
+
   for(const wall of [...house.wallObjects]){
     if(wall.userData.floor!==floorIndex)continue;
     if(wall.userData.destroyed)continue;
@@ -636,26 +508,48 @@ function collapseFloor(floorIndex){
     const wp=new THREE.Vector3();
     wall.getWorldPosition(wp);
     const bb=new THREE.Box3().setFromObject(wall);
-    const sz=new THREE.Vector3();
-    bb.getSize(sz);
-    for(let p=0;p<4;p++){
+    const sz=new THREE.Vector3();bb.getSize(sz);
+
+    for(let p=0;p<3;p++){
       const pos=wp.clone();
-      pos.x+=(Math.random()-.5)*sz.x;
-      pos.y+=(Math.random()-.5)*sz.y;
-      pos.z+=(Math.random()-.5)*sz.z;
-      spawnDebris(pos,wall.material,sz,15);
+      pos.x+=(Math.random()-.5)*sz.x*0.7;
+      pos.y+=(Math.random()-.5)*sz.y*0.7;
+      pos.z+=(Math.random()-.5)*sz.z*0.7;
+
+      const bigSize=new THREE.Vector3(
+        sz.x*(0.5+Math.random()*0.3),
+        sz.y*(0.5+Math.random()*0.3),
+        sz.z*(0.5+Math.random()*0.3)
+      );
+      const mesh=new THREE.Mesh(debrisGeo,wall.material);
+      mesh.scale.copy(bigSize);
+      mesh.position.copy(pos);
+      scene.add(mesh);
+      debris.push({
+        mesh:mesh,
+        vel:new THREE.Vector3((Math.random()-.5)*4,Math.random()*2,(Math.random()-.5)*4),
+        rot:new THREE.Vector3((Math.random()-.5)*3,(Math.random()-.5)*3,(Math.random()-.5)*3),
+        life:150,material:wall.material,isBig:true,size:bigSize.clone(),broken:false
+      });
     }
     wall.parent.remove(wall);
-    state.destroyedParts++;
-    state.score+=10;
+    state.destroyedParts++;state.score+=10;
   }
 
-  // этаж целиком удаляем
-  if(floorGroup.parent)floorGroup.parent.remove(floorGroup);
+  if(fg.parent)fg.parent.remove(fg);
 
-  // шанс каскадного обрушения этажей выше
-  if(floorIndex+1<house.floors&&Math.random()<.7){
-    setTimeout(()=>collapseFloor(floorIndex+1),500+Math.random()*500);
+  // пыль
+  for(let k=0;k<6;k++){
+    const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.6}));
+    sm.position.set((Math.random()-.5)*house.width,floorIndex*house.floorHeight+1,(Math.random()-.5)*house.depth);
+    sm.scale.setScalar(3);
+    scene.add(sm);
+    effects.push({mesh:sm,life:3,max:3,targetR:8,type:'smoke',vel:new THREE.Vector3((Math.random()-.5)*2,1+Math.random(),(Math.random()-.5)*2)});
+  }
+
+  // каскад — верхние этажи
+  for(let f=floorIndex+1;f<house.floors;f++){
+    setTimeout(()=>tiltFloor(f),300+(f-floorIndex-1)*200);
   }
 }
 
@@ -665,19 +559,10 @@ function destroyRoof(){
   const wp=new THREE.Vector3();
   house.roof.getWorldPosition(wp);
   const bb=new THREE.Box3().setFromObject(house.roof);
-  const sz=new THREE.Vector3();
-  bb.getSize(sz);
-  for(let p=0;p<8;p++){
-    const pos=wp.clone();
-    pos.x+=(Math.random()-.5)*sz.x;
-    pos.y+=(Math.random()-.5)*sz.y;
-    pos.z+=(Math.random()-.5)*sz.z;
-    spawnDebris(pos,house.roof.material,sz,10);
-  }
+  const sz=new THREE.Vector3();bb.getSize(sz);
+  for(let p=0;p<8;p++)spawnDebris(wp,house.roof.material,sz,10);
   scene.remove(house.roof);
-  state.destroyedParts++;
-  state.score+=30;
-  // антенну тоже убираем
+  state.destroyedParts++;state.score+=30;
   if(house.antenna){scene.remove(house.antenna);house.antenna=null;}
 }
 
@@ -687,18 +572,10 @@ function destroyFoundation(){
   const wp=new THREE.Vector3();
   house.foundation.getWorldPosition(wp);
   const bb=new THREE.Box3().setFromObject(house.foundation);
-  const sz=new THREE.Vector3();
-  bb.getSize(sz);
-  for(let p=0;p<10;p++){
-    const pos=wp.clone();
-    pos.x+=(Math.random()-.5)*sz.x;
-    pos.y+=(Math.random()-.5)*sz.y;
-    pos.z+=(Math.random()-.5)*sz.z;
-    spawnDebris(pos,house.foundation.material,sz,12);
-  }
+  const sz=new THREE.Vector3();bb.getSize(sz);
+  for(let p=0;p<10;p++)spawnDebris(wp,house.foundation.material,sz,12);
   scene.remove(house.foundation);
-  state.destroyedParts++;
-  state.score+=50;
+  state.destroyedParts++;state.score+=50;
   showMsg('ФУНДАМЕНТ УНИЧТОЖЕН!');
 }
 
@@ -710,9 +587,7 @@ function launchRocket(from,to){
   body.rotation.x=Math.PI/2;g.add(body);
   const tip=new THREE.Mesh(new THREE.ConeGeometry(.2,.5,8),new THREE.MeshLambertMaterial({color:0x333333}));
   tip.rotation.x=Math.PI/2;tip.position.z=1;g.add(tip);
-  g.position.copy(from);
-  g.lookAt(to);
-  scene.add(g);
+  g.position.copy(from);g.lookAt(to);scene.add(g);
   const dir=to.clone().sub(from).normalize();
   rockets.push({mesh:g,vel:dir.multiplyScalar(60),life:3});
 }
@@ -721,97 +596,91 @@ function updateRockets(dt){
     const r=rockets[i];
     r.mesh.position.addScaledVector(r.vel,dt);
     r.life-=dt;
-    // дым
     if(Math.random()<.9){
       const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({color:0xaaaaaa,transparent:true,opacity:.5}));
-      sm.position.copy(r.mesh.position);
-      sm.scale.setScalar(.5);
-      scene.add(sm);
+      sm.position.copy(r.mesh.position);sm.scale.setScalar(.5);scene.add(sm);
       effects.push({mesh:sm,life:.8,max:.8,targetR:1.5,type:'smoke',vel:new THREE.Vector3(0,.3,0)});
     }
-    // проверка столкновения с домом
-    let hit=false;
-    const bbox=new THREE.Box3().setFromObject(house.wallObjects[0]||house.roof||ground);
-    // проще: проверим попадание в прямоугольник дома
     const p=r.mesh.position;
-    if(p.x>-house.width/2-1&&p.x<house.width/2+1&&
-       p.z>-house.depth/2-1&&p.z<house.depth/2+1&&
-       p.y>0&&p.y<house.floors*house.floorHeight+3){
-      hit=true;
-    }
+    const hit=p.x>-house.width/2-1&&p.x<house.width/2+1&&p.z>-house.depth/2-1&&p.z<house.depth/2+1&&p.y>0&&p.y<house.floors*house.floorHeight+3;
     if(r.life<=0||p.y<0||hit){
-      explode(r.mesh.position.clone(),10,15,false);
-      scene.remove(r.mesh);
-      rockets.splice(i,1);
+      explode(p.clone(),10,15,false);
+      scene.remove(r.mesh);rockets.splice(i,1);
     }
   }
 }
 
-// ============ ЭФФЕКТЫ (обновление) ============
+// ============ ОБНОВЛЕНИЕ ЭФФЕКТОВ ============
 function updateEffects(dt){
   for(let i=effects.length-1;i>=0;i--){
     const e=effects[i];
     e.life-=dt;
     const k=Math.max(0,e.life/e.max);
     if(e.mesh){
-      if(e.type==='stem'){
-        e.mesh.material.opacity=.7*k;
-      } else if(e.type==='fireball'){
-        const s=e.targetR*(1-k*k);
-        e.mesh.scale.setScalar(Math.max(.1,s));
+      if(e.type==='stem')e.mesh.material.opacity=.7*k;
+      else if(e.type==='fireball'){
+        e.mesh.scale.setScalar(Math.max(.1,e.targetR*(1-k*k)));
         e.mesh.material.opacity=k;
       } else if(e.type==='smoke'){
-        const s=e.targetR*(1-k*k);
-        e.mesh.scale.setScalar(Math.max(.1,s));
+        e.mesh.scale.setScalar(Math.max(.1,e.targetR*(1-k*k)));
         e.mesh.material.opacity=k*.6;
       }
       if(e.vel)e.mesh.position.addScaledVector(e.vel,dt);
-      if(e.life<=0){
-        scene.remove(e.mesh);
-        effects.splice(i,1);
-      }
+      if(e.life<=0){scene.remove(e.mesh);effects.splice(i,1);}
     } else if(e.light){
       e.light.intensity=(e.max>.5?1000:400)*k;
-      if(e.life<=0){
-        scene.remove(e.light);
-        effects.splice(i,1);
-      }
+      if(e.life<=0){scene.remove(e.light);effects.splice(i,1);}
     }
   }
 }
 
-// ============ ОБЛОМКИ (обновление) ============
+// ============ ОБНОВЛЕНИЕ ОБЛОМКОВ (разбиение крупных) ============
 function updateDebris(dt){
   for(let i=debris.length-1;i>=0;i--){
     const d=debris[i];
     d.vel.y-=22*dt;
     d.mesh.position.addScaledVector(d.vel,dt);
-    // касание земли
+
     if(d.mesh.position.y<0.3){
       d.mesh.position.y=0.3;
-      d.vel.y*=-0.25;
-      d.vel.x*=0.7;
-      d.vel.z*=0.7;
+
+      if(d.isBig&&!d.broken){
+        d.broken=true;
+        for(let k=0;k<3+Math.floor(Math.random()*2);k++){
+          const smallSize=new THREE.Vector3(d.size.x*0.4,d.size.y*0.4,d.size.z*0.4);
+          const mesh=new THREE.Mesh(debrisGeo,d.material);
+          mesh.scale.copy(smallSize);
+          mesh.position.copy(d.mesh.position);
+          mesh.position.x+=(Math.random()-.5)*d.size.x;
+          mesh.position.y+=Math.random()*d.size.y*0.5;
+          mesh.position.z+=(Math.random()-.5)*d.size.z;
+          scene.add(mesh);
+          debris.push({
+            mesh:mesh,
+            vel:new THREE.Vector3((Math.random()-.5)*8,Math.random()*4+2,(Math.random()-.5)*8),
+            rot:new THREE.Vector3((Math.random()-.5)*6,(Math.random()-.5)*6,(Math.random()-.5)*6),
+            life:100,material:d.material,isBig:false
+          });
+        }
+        d.mesh.scale.multiplyScalar(0.7);
+      }
+
+      d.vel.y*=-0.2;
+      d.vel.x*=0.6;
+      d.vel.z*=0.6;
     }
+
     d.mesh.rotation.x+=d.rot.x*dt;
     d.mesh.rotation.y+=d.rot.y*dt;
     d.mesh.rotation.z+=d.rot.z*dt;
-    d.life-=dt;
-    if(d.life<10){
-      d.mesh.material.transparent=true;
-      d.mesh.material.opacity=Math.max(.1,d.life/10);
-    }
-    if(d.life<0){
-      scene.remove(d.mesh);
-      debris.splice(i,1);
-    }
-  }
-  }
-// ============ УПРАВЛЕНИЕ КАМЕРОЙ ============
-let touchStart=null;
-let pinchStart=0;
-let camTargetY=state.camTarget.y;
 
+    d.life-=dt;
+    if(d.life<0){scene.remove(d.mesh);debris.splice(i,1);}
+  }
+}
+
+// ============ УПРАВЛЕНИЕ КАМЕРОЙ ============
+let touchStart=null,pinchStart=0;
 const dom=renderer.domElement;
 
 dom.addEventListener('touchstart',e=>{
@@ -819,10 +688,7 @@ dom.addEventListener('touchstart',e=>{
   if(e.touches.length===1){
     touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now(),moved:false};
   } else if(e.touches.length===2){
-    pinchStart=Math.hypot(
-      e.touches[0].clientX-e.touches[1].clientX,
-      e.touches[0].clientY-e.touches[1].clientY
-    );
+    pinchStart=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     touchStart=null;
   }
 },{passive:true});
@@ -838,10 +704,7 @@ dom.addEventListener('touchmove',e=>{
     touchStart.x=e.touches[0].clientX;
     touchStart.y=e.touches[0].clientY;
   } else if(e.touches.length===2&&pinchStart){
-    const d=Math.hypot(
-      e.touches[0].clientX-e.touches[1].clientX,
-      e.touches[0].clientY-e.touches[1].clientY
-    );
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
     state.camDist*=pinchStart/d;
     state.camDist=Math.max(20,Math.min(200,state.camDist));
     pinchStart=d;
@@ -849,25 +712,20 @@ dom.addEventListener('touchmove',e=>{
 },{passive:true});
 
 dom.addEventListener('touchend',e=>{
-  if(touchStart&&!touchStart.moved&&Date.now()-touchStart.t<400){
-    handleTap(touchStart.x,touchStart.y);
-  }
-  touchStart=null;
-  pinchStart=0;
+  if(touchStart&&!touchStart.moved&&Date.now()-touchStart.t<400)handleTap(touchStart.x,touchStart.y);
+  touchStart=null;pinchStart=0;
 },{passive:true});
 
-// ПК — мышь
-let mouseDown=false, mouseX=0, mouseY=0;
+// ПК
+let mouseDown=false,mouseX=0,mouseY=0;
 dom.addEventListener('mousedown',e=>{
   if(e.target.closest('#toolsBar')||e.target.closest('#camBtns'))return;
   mouseDown=true;mouseX=e.clientX;mouseY=e.clientY;
 });
 dom.addEventListener('mousemove',e=>{
   if(!mouseDown)return;
-  const dx=e.clientX-mouseX;
-  const dy=e.clientY-mouseY;
-  state.camTheta-=dx*.01;
-  state.camPhi-=dy*.01;
+  const dx=e.clientX-mouseX,dy=e.clientY-mouseY;
+  state.camTheta-=dx*.01;state.camPhi-=dy*.01;
   state.camPhi=Math.max(.2,Math.min(Math.PI/2.05,state.camPhi));
   mouseX=e.clientX;mouseY=e.clientY;
 });
@@ -877,19 +735,16 @@ dom.addEventListener('click',e=>{
   handleTap(e.clientX,e.clientY);
 });
 
-// ============ ТАП ПО ЭКРАНУ (ПРИМЕНИТЬ ИНСТРУМЕНТ) ============
+// ============ ТАП ============
 const raycaster=new THREE.Raycaster();
 const ndc=new THREE.Vector2();
 
-function getAimPoint(clientX,clientY){
-  ndc.x=(clientX/innerWidth)*2-1;
-  ndc.y=-(clientY/innerHeight)*2+1;
+function getAimPoint(cx,cy){
+  ndc.x=(cx/innerWidth)*2-1;
+  ndc.y=-(cy/innerHeight)*2+1;
   raycaster.setFromCamera(ndc,camera);
-  // Собираем все меши для рейкаста
   const targets=[];
-  scene.traverse(o=>{
-    if(o.isMesh&&o!==ground&&o!==sidewalk&&o!==road)targets.push(o);
-  });
+  scene.traverse(o=>{if(o.isMesh&&o!==ground&&o!==sidewalk&&o!==road)targets.push(o);});
   const hits=raycaster.intersectObjects(targets,false);
   if(hits.length>0)return hits[0].point.clone();
   const gHit=raycaster.intersectObject(ground,false);
@@ -901,20 +756,13 @@ function handleTap(x,y){
   const p=getAimPoint(x,y);
   if(!p)return;
   const tool=state.tool;
-  if(tool==='bomb'){
-    explode(p,12,15,false);
-  } else if(tool==='dynamite'){
-    explode(p,18,22,false);
-    ignite(p);
-  } else if(tool==='rocket'){
-    launchRocket(camera.position.clone(),p);
-  } else if(tool==='lightning'){
-    strikeLightning(p);
-  } else if(tool==='fire'){
-    ignite(p);
-  } else if(tool==='water'){
+  if(tool==='bomb')explode(p,12,15,false);
+  else if(tool==='dynamite'){explode(p,18,22,false);ignite(p);}
+  else if(tool==='rocket')launchRocket(camera.position.clone(),p);
+  else if(tool==='lightning')strikeLightning(p);
+  else if(tool==='fire')ignite(p);
+  else if(tool==='water'){
     extinguish(p,15);
-    // эффект брызг
     for(let k=0;k<6;k++){
       const sm=new THREE.Mesh(smokeGeo,new THREE.MeshBasicMaterial({color:0x66aaff,transparent:true,opacity:.7}));
       sm.position.copy(p);
@@ -925,88 +773,61 @@ function handleTap(x,y){
       scene.add(sm);
       effects.push({mesh:sm,life:1.5,max:1.5,targetR:3,type:'smoke',vel:new THREE.Vector3(0,-1,0)});
     }
-  } else if(tool==='nuke'){
-    explode(p,45,50,true);
-  }
+  } else if(tool==='nuke')explode(p,45,50,true);
 }
 
-// ============ МОЛНИЯ ============
 function strikeLightning(pos){
-  // линия с неба
-  const points=[
-    new THREE.Vector3(pos.x,200,pos.z),
-    new THREE.Vector3(pos.x+5,100,pos.z+3),
-    new THREE.Vector3(pos.x-3,50,pos.z-2),
-    new THREE.Vector3(pos.x,pos.y,pos.z)
-  ];
-  const geo=new THREE.BufferGeometry().setFromPoints(points);
+  const pts=[new THREE.Vector3(pos.x,200,pos.z),new THREE.Vector3(pos.x+5,100,pos.z+3),new THREE.Vector3(pos.x-3,50,pos.z-2),new THREE.Vector3(pos.x,pos.y,pos.z)];
+  const geo=new THREE.BufferGeometry().setFromPoints(pts);
   const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xaaddff,linewidth:3}));
   scene.add(line);
   setTimeout(()=>scene.remove(line),250);
-  // вспышка на весь экран
   const fl=document.createElement('div');
   fl.style.cssText='position:fixed;inset:0;background:#fff;z-index:30;pointer-events:none;transition:opacity .3s';
   document.body.appendChild(fl);
   setTimeout(()=>{fl.style.opacity='0';setTimeout(()=>fl.remove(),400);},50);
-  // взрыв
   explode(pos,15,20,false);
   ignite(pos);
 }
 
 // ============ КНОПКИ ИНСТРУМЕНТОВ ============
-const toolBtns=document.querySelectorAll('.tool');
-toolBtns.forEach(b=>{
-  const handler=function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    toolBtns.forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tool').forEach(b=>{
+  const h=function(e){
+    e.preventDefault();e.stopPropagation();
+    document.querySelectorAll('.tool').forEach(t=>t.classList.remove('active'));
     b.classList.add('active');
     state.tool=b.dataset.tool;
     if(navigator.vibrate)navigator.vibrate(20);
   };
-  b.addEventListener('click',handler);
-  b.addEventListener('touchstart',handler,{passive:false});
+  b.addEventListener('click',h);
+  b.addEventListener('touchstart',h,{passive:false});
 });
 
-// ============ КНОПКИ КАМЕРЫ ============
-document.getElementById('camTop').addEventListener('click',()=>{
-  state.camPhi=0.25;
-  state.camTheta=Math.PI/4;
-  state.camDist=100;
-});
-document.getElementById('camReset').addEventListener('click',()=>{
-  state.camPhi=Math.PI/3;
-  state.camTheta=Math.PI/4;
-  state.camDist=80;
-});
+// ============ КАМЕРА ============
+document.getElementById('camTop').addEventListener('click',()=>{state.camPhi=0.25;state.camTheta=Math.PI/4;state.camDist=100;});
+document.getElementById('camReset').addEventListener('click',()=>{state.camPhi=Math.PI/3;state.camTheta=Math.PI/4;state.camDist=80;});
 
 // ============ ПОДСКАЗКА ============
-document.getElementById('startHint').addEventListener('click',function(){
-  this.classList.add('hidden');
-});
+document.getElementById('startHint').addEventListener('click',function(){this.classList.add('hidden');});
 function showMsg(text){
   const m=document.getElementById('msg');
-  m.textContent=text;
-  m.classList.add('on');
+  m.textContent=text;m.classList.add('on');
   clearTimeout(m._t);
   m._t=setTimeout(()=>m.classList.remove('on'),2500);
 }
 
-// ============ HUD ОБНОВЛЕНИЕ ============
+// ============ HUD ============
 function updateHUD(){
   const pct=Math.round(state.destroyedParts/state.totalParts*100);
   document.getElementById('destroyVal').textContent=pct+'%';
   document.getElementById('scoreVal').textContent=state.score;
-  // этажей уцелело
   const aliveFloors=house.floorObjects.filter(f=>f.userData.collapsed!==true).length;
   document.getElementById('floorsVal').textContent=aliveFloors+'/'+house.floors;
 }
 
 // ============ КАМЕРА ============
 function updateCamera(){
-  const phi=state.camPhi;
-  const theta=state.camTheta;
-  const dist=state.camDist;
+  const phi=state.camPhi,theta=state.camTheta,dist=state.camDist;
   camera.position.x=state.camTarget.x+dist*Math.sin(phi)*Math.cos(theta);
   camera.position.y=state.camTarget.y+dist*Math.cos(phi);
   camera.position.z=state.camTarget.z+dist*Math.sin(phi)*Math.sin(theta);
@@ -1016,35 +837,26 @@ function updateCamera(){
 // ============ ЦИКЛ ============
 const clock=new THREE.Clock();
 let hudTimer=0;
-
 function loop(){
   requestAnimationFrame(loop);
   const dt=Math.min(clock.getDelta(),0.05);
-
   updateCamera();
   updateDebris(dt);
   updateEffects(dt);
   updateFires(dt);
   updateRockets(dt);
-
   hudTimer+=dt;
-  if(hudTimer>0.3){
-    hudTimer=0;
-    updateHUD();
-  }
-
+  if(hudTimer>0.3){hudTimer=0;updateHUD();}
   renderer.render(scene,camera);
 }
 
-// ============ РЕСАЙЗ ============
 addEventListener('resize',()=>{
   camera.aspect=innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
 });
 
-// ============ СТАРТ ============
 loop();
 </script>
 </body>
-</html>
+  </html>
